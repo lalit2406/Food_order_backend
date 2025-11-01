@@ -16,7 +16,7 @@ export const GenerateOTP = () => {
 export const onRequestOTP = async (otp: number, toPhoneNumber: string) => {
     // send OTP to user via SMS or Email
 
-    const accountSid = 'ACaca00e1488a7c925ea6d0d9e5ea5f74b';
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = '28ec5ca4b8d92d91e65c8f581efb26f4';
     const client = require('twilio')(accountSid, authToken);
 
