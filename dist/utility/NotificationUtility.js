@@ -23,8 +23,8 @@ const GenerateOTP = () => {
 exports.GenerateOTP = GenerateOTP;
 const onRequestOTP = (otp, toPhoneNumber) => __awaiter(void 0, void 0, void 0, function* () {
     // send OTP to user via SMS or Email
-    const accountSid =process.env.TWILIO_ACCOUNT_SID;
-    const authToken = '28ec5ca4b8d92d91e65c8f581efb26f4';
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
     const client = require('twilio')(accountSid, authToken);
     const response = yield client.messages.create({
         body: `Your OTP is ${otp}`,
