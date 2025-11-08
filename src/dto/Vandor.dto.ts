@@ -34,3 +34,20 @@ export interface VandorPayload{
     // phone: string;
     // pincode: string;
 }
+
+export interface CreateOfferInputs{
+    offerType: string;
+    vandors: [any]; 
+    title: string;
+    description: string;
+    minvalue: number;
+    offerAmount: number;
+    startValidity: Date;
+    endValidity: Date;
+    promocode: string;
+    promoType: string;
+    banks: [any];
+    bins: [any];
+    pincode: string;
+    isActive: boolean;
+}

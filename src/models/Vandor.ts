@@ -16,8 +16,8 @@ interface VandorDoc extends Document {
     coverImages: [string];
     rating: number;
     foods: any,
-    // lat: number;
-    // lng: number;
+    lat: number;
+    lng: number;
 }
 
 
@@ -38,8 +38,8 @@ const VandorSchema = new Schema({
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'food'
     }],
-    // lat: { type: Number},
-    // lng: {type: Number}
+    lat: { type: Number},
+    lng: {type: Number}
 },{
     toJSON: {
         transform(doc: any, ret: any){

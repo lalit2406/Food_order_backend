@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { AddFood, GetFoods, GetVandorProfile, UpdateVandorCoverImage, UpdateVandorProfile, UpdateVandorService, VandorLogin, } from '../controllers';
+import { AddFood, GetFoods, GetVandorProfile, UpdateVandorCoverImage, UpdateVandorProfile, UpdateVandorService, VandorLogin,GetCurrentOrders, ProcessOrder, GetOrderDetails, GetOffers, AddOffer, EditOffer } from '../controllers';
 import { Authenticate } from '../middlewares';
 import multer from 'multer';
 
@@ -30,6 +30,16 @@ router.patch('/service', UpdateVandorService);
 router.post('/food',images, AddFood);
 router.get('/foods', GetFoods);
 
+// ORDERS
+router.get('/orders',GetCurrentOrders);
+router.put('/order/:id/process',ProcessOrder);
+router.get('/order/:id',GetOrderDetails);
+
+// offers
+router.get('/offers', GetOffers);
+router.post('/offer', AddOffer);
+router.put('/offer/:id', EditOffer);
+// delete offer
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
     res.json({message: "Hello from Vandor"});
