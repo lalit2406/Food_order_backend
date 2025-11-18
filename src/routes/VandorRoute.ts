@@ -6,7 +6,7 @@ import path from 'path';
 
 const router = express.Router();
 
-const UPLOAD_DESTINATION = path.join(__dirname, '..', '..', 'images');
+const UPLOAD_DESTINATION = path.join(__dirname,'..', 'images');
 
 const imageStorage = multer.diskStorage({
     destination: function (req, file, cb)  {
