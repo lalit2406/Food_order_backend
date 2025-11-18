@@ -2,12 +2,15 @@ import express, { Request, Response, NextFunction } from 'express';
 import { AddFood, GetFoods, GetVandorProfile, UpdateVandorCoverImage, UpdateVandorProfile, UpdateVandorService, VandorLogin,GetCurrentOrders, ProcessOrder, GetOrderDetails, GetOffers, AddOffer, EditOffer } from '../controllers';
 import { Authenticate } from '../middlewares';
 import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 
+const UPLOAD_DESTINATION = path.join(__dirname, '..', '..', 'images');
+
 const imageStorage = multer.diskStorage({
     destination: function (req, file, cb)  {
-        cb(null, 'images');
+        cb(null, UPLOAD_DESTINATION);
     },
     filename: function (req, file, cb) {
         cb(null,new Date().toISOString() +'-'+ file.originalname);

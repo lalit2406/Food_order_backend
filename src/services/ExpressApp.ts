@@ -16,7 +16,7 @@ export default async (app: Application) => {
     const publicPath = path.join(__dirname, '../../public'); 
     app.use(express.static(publicPath));
 
-    const imagePath = path.join(__dirname,'../images');
+    const imagePath = path.join(__dirname,'..','..','images');
     
     app.use('/images', express.static(imagePath));
 
