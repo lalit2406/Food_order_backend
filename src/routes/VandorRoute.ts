@@ -10,6 +10,7 @@ const router = express.Router();
 const UPLOAD_DESTINATION = path.join(process.cwd(), 'images');
 
 if (!fs.existsSync(UPLOAD_DESTINATION)) {
+    console.log('Creating images folder at:', UPLOAD_DESTINATION);
     fs.mkdirSync(UPLOAD_DESTINATION, { recursive: true });
 }
 
