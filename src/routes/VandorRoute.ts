@@ -6,11 +6,9 @@ import path from 'path';
 
 const router = express.Router();
 
-const UPLOAD_DESTINATION = path.join(__dirname,'..', 'images');
-
 const imageStorage = multer.diskStorage({
     destination: function (req, file, cb)  {
-        cb(null, UPLOAD_DESTINATION);
+        cb(null, path.join(__dirname, '../../images'));
     },
     filename: function (req, file, cb) {
        const safeDate = new Date().toISOString().replace(/:/g, '-');
