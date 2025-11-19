@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer'; // <-- Add this import
 
 export * from './PasswordUtility';
 export * from './NotificationUtility';
+export * from './CloudinaryUtility';
 
 import bcrypt from 'bcrypt';
 

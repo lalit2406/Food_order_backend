@@ -1,5 +1,6 @@
 import { CreateOfferInputs, EditVandorInputs, VandorLoginInputs } from "../dto";
 import { CreateFoodInputs } from "../dto";
+import { UploadImage } from '../utility';
 import { Food, Offer, Order } from "../models"
 import { GenerateSignature, ValidatePassword } from "../utility";
 import { FindVandor } from "./AdminController";
@@ -154,9 +155,6 @@ export const AddFood = async (req: Request, res: Response, next: NextFunction) =
         const vandor = await FindVandor(user._id);
 if (vandor !== null) {
 
-            // 1. ADD THIS LOG: Check what the server is actually receiving
-           console.log("REQ FILES on Render:", req.files); // This will show in Render Dashboard Logs
-
     const files = req.files as Express.Multer.File[] | undefined;
 
     // STOP THE PROCESS IF NO FILES
@@ -164,7 +162,17 @@ if (vandor !== null) {
         return res.status(400).json({ message: "Error: No images found in request." });
     }
 
-            const images = files.map((file: Express.Multer.File) => file.filename);
+    const images = [];
+            
+            // Loop through all uploaded files
+            for (const file of files) {
+                // Upload to Cloudinary
+                const resultUrl = await UploadImage(file);
+                
+                if(resultUrl) {
+                    images.push(resultUrl); // Push the Cloud URL, not the filename
+                }
+            }
 
             const createdFood = await Food.create({
                 vandorId: vandor._id,

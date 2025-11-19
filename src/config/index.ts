@@ -48,4 +48,19 @@ export class Config {
         Config.ensureEnvLoaded();
         return process.env.GMAIL_PASS || '';
     }
+
+    public static get CLOUDINARY_CLOUD_NAME(): string {
+        Config.ensureEnvLoaded();
+        return process.env.CLOUDINARY_CLOUD_NAME || '';
+    }
+
+    public static get CLOUDINARY_API_KEY(): string {
+        Config.ensureEnvLoaded();
+        return process.env.CLOUDINARY_API_KEY || '';
+    }
+
+    public static get CLOUDINARY_API_SECRET(): string {
+        Config.ensureEnvLoaded();
+        return process.env.CLOUDINARY_API_SECRET || '';
+    }
 }
