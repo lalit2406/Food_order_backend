@@ -155,14 +155,14 @@ export const AddFood = async (req: Request, res: Response, next: NextFunction) =
 if (vandor !== null) {
 
             // 1. ADD THIS LOG: Check what the server is actually receiving
-            console.log("REQ FILES:", req.files); 
+           console.log("REQ FILES on Render:", req.files); // This will show in Render Dashboard Logs
 
-            const files = req.files as Express.Multer.File[] | undefined;
+    const files = req.files as Express.Multer.File[] | undefined;
 
-            if(!files || files.length === 0) {
-                // 2. CHANGE THIS: Return an error to the user instead of creating an empty entry
-                return res.status(400).json({ message: "Error: No images found. Please upload images with key 'images'" });
-            }
+    // STOP THE PROCESS IF NO FILES
+    if(!files || files.length === 0) {
+        return res.status(400).json({ message: "Error: No images found in request." });
+    }
 
             const images = files.map((file: Express.Multer.File) => file.filename);
 

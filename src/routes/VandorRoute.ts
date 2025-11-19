@@ -3,12 +3,19 @@ import { AddFood, GetFoods, GetVandorProfile, UpdateVandorCoverImage, UpdateVand
 import { Authenticate } from '../middlewares';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
 
+const UPLOAD_DESTINATION = path.join(process.cwd(), 'images');
+
+if (!fs.existsSync(UPLOAD_DESTINATION)) {
+    fs.mkdirSync(UPLOAD_DESTINATION, { recursive: true });
+}
+
 const imageStorage = multer.diskStorage({
     destination: function (req, file, cb)  {
-        cb(null, path.join(__dirname, '../../images'));
+        cb(null, UPLOAD_DESTINATION);
     },
     filename: function (req, file, cb) {
        const safeDate = new Date().toISOString().replace(/:/g, '-');
