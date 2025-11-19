@@ -152,16 +152,19 @@ export const AddFood = async (req: Request, res: Response, next: NextFunction) =
         const { name, description, category, foodType, readyTime, price } = <CreateFoodInputs>req.body;
 
         const vandor = await FindVandor(user._id);
+if (vandor !== null) {
 
-        if (vandor !== null) {
+            // 1. ADD THIS LOG: Check what the server is actually receiving
+            console.log("REQ FILES:", req.files); 
 
             const files = req.files as Express.Multer.File[] | undefined;
 
-            if(!files || !Array.isArray(files)){
-                console.error("Multer error: req files is missing")
+            if(!files || files.length === 0) {
+                // 2. CHANGE THIS: Return an error to the user instead of creating an empty entry
+                return res.status(400).json({ message: "Error: No images found. Please upload images with key 'images'" });
             }
 
-            const images = files ? files.map((file: Express.Multer.File) => file.filename): [];
+            const images = files.map((file: Express.Multer.File) => file.filename);
 
             const createdFood = await Food.create({
                 vandorId: vandor._id,
