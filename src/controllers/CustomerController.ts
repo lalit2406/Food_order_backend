@@ -229,64 +229,40 @@ export const EditCustomerProfile = async (req: Request, res: Response, next: Nex
 
 
 // -------------cart section-------------//
-
 export const AddToCart = async (req: Request, res: Response, next: NextFunction) => {
 
     const customer = req.user;
-    if(customer) {
 
-        const profile = await Customer.findById(customer._id).populate('cart.food');
-        if (!profile) {
-            return res.status(404).json({ message: 'Customer profile not found.' });
-        }
-
-        let cartItems = Array();
+    if(customer){
 
         const { _id, unit } = <CartItem> req.body;
+        
+        // 1. Try to find the item in the cart and update its unit count atomically.
+        // The "cart.food" query checks if this specific food ID already exists in the array.
+        let result = await Customer.findOneAndUpdate(
+            { _id: customer._id, "cart.food": _id },
+            { $inc: { "cart.$.unit": unit } }, // $inc works for both +1 and -1 (to decrease)
+            { new: true }
+        ).populate('cart.food');
 
-        const food = await Food.findById(_id);
-
-        if(food){
-                cartItems = profile.cart;
-
-                if (cartItems.length > 0){
-                    // Check if food item already exists in cart
-                    let existFoodItem = cartItems.filter(item => item.food.toString() === _id);
-
-                    if(existFoodItem.length > 0){
-                        // Item exists, update unit or remove
-                        const index = cartItems.indexOf(existFoodItem[0]);
-                        if(unit > 0){
-                            cartItems[index] = { food, unit };
-
-                        }
-                        else{
-                            cartItems.splice(index, 1);
-                        }
-                    }
-                    else{
-                        // Item does not exist, add it to cart
-                        cartItems.push({ food, unit });
-                    }
-                }
-                else{
-                    // Cart is empty, add the first item
-                    cartItems.push({ food, unit });
-                }
-
-                if(cartItems){
-                    profile.cart = cartItems as any;
-                    const cartresult = await profile.save();
-                    return res.status(200).json(cartresult.cart);
-                }
-            }
-
+        // 2. If "result" is null, it means the food item was NOT in the cart yet.
+        if(!result){
+            // So we push a brand new item into the cart array.
+            result = await Customer.findOneAndUpdate(
+                { _id: customer._id },
+                { $push: { cart: { food: _id, unit: unit } } },
+                { new: true }
+            ).populate('cart.food');
         }
-    
-        return res.status(400).json({message: 'Error adding to cart'});
 
+        // 3. Return the updated cart
+        if(result){
+             return res.status(200).json(result.cart);
+        }
+    }
+
+    return res.status(400).json({message: 'Unable to add to cart!'});
 }
-  
 
 
 export const GetCart = async (req: Request, res: Response, next: NextFunction) => {
