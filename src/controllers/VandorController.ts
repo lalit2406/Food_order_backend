@@ -1,10 +1,8 @@
 import { CreateOfferInputs, EditVandorInputs, VandorLoginInputs } from "../dto";
 import { CreateFoodInputs } from "../dto";
-import { UploadImage } from '../utility';
 import { Food, Offer, Order } from "../models"
-import { GenerateSignature, ValidatePassword } from "../utility";
+import { GenerateSignature, ValidatePassword, UploadImage } from "../utility";
 import { FindVandor } from "./AdminController";
-
 import { Request, Response, NextFunction } from 'express';
 
 export const VandorLogin = async (req: Request, res: Response, next: NextFunction) => {
@@ -85,32 +83,39 @@ export const UpdateVandorProfile = async (req: Request, res: Response, next: Nex
 }
 
 
-
 export const UpdateVandorCoverImage = async (req: Request, res: Response, next: NextFunction) => {
 
     const user = req.user;
 
     if (user) {
+        const vandor = await FindVandor(user._id);
 
+        if (vandor !== null) {
 
-            const vandor = await FindVandor(user._id);
+            const files = req.files as Express.Multer.File[] | undefined;
 
-            if (vandor !== null) {
+            const images = [];
 
-                const files = req.files as [Express.Multer.File];
-
-                const images = files.map((file: Express.Multer.File) => file.filename);
-
-                vandor.coverImages.push(...images);
-                
-                const result = await vandor.save();
-                
-                return res.json({ result });
+            // NEW LOGIC: Upload to Cloudinary
+            if (files && files.length > 0) {
+                for (const file of files) {
+                    const resultUrl = await UploadImage(file);
+                    if(resultUrl){
+                        images.push(resultUrl); // Push the FULL Cloudinary URL
+                    }
+                }
             }
+
+            // Save the Cloudinary URLs to the database
+            vandor.coverImages.push(...images);
+            
+            const result = await vandor.save();
+            
+            return res.json(result);
         }
+    }
 
     return res.json({ message: "Vandor info not found" });
-
 }
 
 export const UpdateVandorService = async (req: Request, res: Response, next: NextFunction) => {
