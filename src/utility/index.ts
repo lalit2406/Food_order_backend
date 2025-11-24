@@ -1,45 +1,26 @@
+import nodemailer from 'nodemailer';
 
-import nodemailer from 'nodemailer'; 
-
+// 1. Re-export other utilities
+// (Password logic is already in PasswordUtility.ts, so we just export it here)
 export * from './PasswordUtility';
 export * from './NotificationUtility';
 export * from './CloudinaryUtility';
 
-import bcrypt from 'bcrypt';
-
-// Generates a bcrypt salt with 10 rounds
-export const GenerateSalt = async (): Promise<string> => {
-    return await bcrypt.genSalt(10);
-};
-
-// Hashes the password using the provided salt
-export const GeneratePassword = async (password: string, salt: string): Promise<string> => {
-    return await bcrypt.hash(password, salt);
-};
-
-// To compare a plain password with a hash (for login)
-export const ValidatePassword = async (enteredPassword: string, savedHash: string, salt: string): Promise<boolean> => {
-    const hash = await GeneratePassword(enteredPassword, salt);
-    return hash === savedHash;
-};
-
-
-// --- Nodemailer Email Utility ---
- 
-// --- FIXED NODEMAILER CONFIGURATION (Force IPv4) ---
+// --- FIXED NODEMAILER CONFIGURATION ---
+// Switching to Port 587 (TLS) + IPv4 is the most compatible setup for Render
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,               // Use Port 465 (Direct SSL)
-    secure: true,            // Must be true for port 465
+    port: 587,              // Standard TLS port (less likely to be blocked than 465)
+    secure: false,          // Must be false for port 587
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS,
     },
     tls: {
-        rejectUnauthorized: false 
+        rejectUnauthorized: false // Prevents certificate errors
     },
-    family: 4,               // <--- CRITICAL: Forces IPv4 to fix Render timeouts
-    connectionTimeout: 10000 // Increase timeout to 10 seconds
+    family: 4,              // <--- CRITICAL: Forces IPv4 to prevent connection timeouts
+    connectionTimeout: 10000 // 10 seconds timeout
 } as any);
 
 // Function to send the email
