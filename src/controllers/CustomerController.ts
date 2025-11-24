@@ -168,7 +168,7 @@ export const RequestOTP = async (req: Request, res: Response, next: NextFunction
             // Send OTP via phone (uncomment if configured)
             // await onRequestOTP(otp, profile.phone); 
             // Send OTP via email (add if needed)
-            // await SendVerificationEmail(profile.email, otp);
+            await SendVerificationEmail(profile.email, otp);
 
             return res.status(200).json({message: 'OTP sent successfully'});
 
