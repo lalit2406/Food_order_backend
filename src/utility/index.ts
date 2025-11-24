@@ -1,7 +1,5 @@
-// utility/index.ts
 
-import nodemailer from 'nodemailer'; // <-- Add this import
-// ... (other existing imports)
+import nodemailer from 'nodemailer'; 
 
 export * from './PasswordUtility';
 export * from './NotificationUtility';
@@ -27,28 +25,27 @@ export const ValidatePassword = async (enteredPassword: string, savedHash: strin
 
 
 // --- Nodemailer Email Utility ---
-// --- FIXED NODEMAILER CONFIGURATION ---
+ 
+// --- FIXED NODEMAILER CONFIGURATION (Force IPv4) ---
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // Explicitly tell it to use Gmail
-    port: 465,               // Port 465 is usually open on Render (SSL)
-    secure: true,            // Must be true for port 465
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Must be false for port 587 (STARTTLS)
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS,
     },
     tls: {
-        // This helps prevents "Self Signed Certificate" errors in some cloud environments
         rejectUnauthorized: false 
     },
-    // Increase timeout to prevent premature cutoffs
-    connectionTimeout: 10000, 
-});
+    family: 4, // Forces IPv4 to prevent connection timeouts on Render
+} as any);
 
-// Function to send the email (Keep your existing function logic)
+// Function to send the email
 export const SendVerificationEmail = async (email: string, otp: number) => {
     try {
         const mailOptions = {
-            from: '"FoodieDelight" <admin@foodiedelight.com>', // Adds a nice sender name
+            from: '"FoodieDelight" <no-reply@foodiedelight.com>',
             to: email, 
             subject: 'Your Verification Code', 
             html: `
