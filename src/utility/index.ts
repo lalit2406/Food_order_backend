@@ -29,8 +29,8 @@ export const ValidatePassword = async (enteredPassword: string, savedHash: strin
 // --- FIXED NODEMAILER CONFIGURATION (Force IPv4) ---
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Must be false for port 587 (STARTTLS)
+    port: 465,               // Use Port 465 (Direct SSL)
+    secure: true,            // Must be true for port 465
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS,
@@ -38,7 +38,8 @@ const transporter = nodemailer.createTransport({
     tls: {
         rejectUnauthorized: false 
     },
-    family: 4, // Forces IPv4 to prevent connection timeouts on Render
+    family: 4,               // <--- CRITICAL: Forces IPv4 to fix Render timeouts
+    connectionTimeout: 10000 // Increase timeout to 10 seconds
 } as any);
 
 // Function to send the email
