@@ -1,129 +1,69 @@
 // utility/index.ts
-import nodemailer from 'nodemailer';
 
-// Re-exports
+import nodemailer from 'nodemailer'; // <-- Add this import
+// ... (other existing imports)
+
 export * from './PasswordUtility';
 export * from './NotificationUtility';
 export * from './CloudinaryUtility';
 
-// Read envs (make sure Render has these set)
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_PASS = process.env.GMAIL_PASS;
+import bcrypt from 'bcrypt';
 
-// Basic environment sanity check
-if (!GMAIL_USER || !GMAIL_PASS) {
-  console.warn('⚠️ GMAIL_USER or GMAIL_PASS is not set. Email sending will fail until set.');
-}
+// Generates a bcrypt salt with 10 rounds
+export const GenerateSalt = async (): Promise<string> => {
+    return await bcrypt.genSalt(10);
+};
 
-/**
- * Nodemailer transporter configuration tuned for cloud hosts (e.g. Render)
- * - port 587 / TLS (STARTTLS) recommended
- * - family: 4 forces IPv4 (Render sometimes has IPv6 issues)
- * - longer timeouts so transient slowness doesn't immediately ETIMEDOUT
- * - greetingTimeout to ensure SMTP banner is received
- * - requireTLS ensures STARTTLS is used when available
- */
+// Hashes the password using the provided salt
+export const GeneratePassword = async (password: string, salt: string): Promise<string> => {
+    return await bcrypt.hash(password, salt);
+};
+
+// To compare a plain password with a hash (for login)
+export const ValidatePassword = async (enteredPassword: string, savedHash: string, salt: string): Promise<boolean> => {
+    const hash = await GeneratePassword(enteredPassword, salt);
+    return hash === savedHash;
+};
+
+
+// --- Nodemailer Email Utility ---
+
+// Create a transporter using your SMTP details
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // use STARTTLS
-  requireTLS: true,
-  auth: {
-    user: GMAIL_USER,
-    pass: GMAIL_PASS,
-  },
-  tls: {
-    // Do NOT set rejectUnauthorized: false in production unless you know what you're doing.
-    // If you still see TLS issues on Render, you can temporarily set rejectUnauthorized: false for debugging.
-    rejectUnauthorized: true,
-  },
-  family: 4,
-  connectionTimeout: 20000, // 20s
-  greetingTimeout: 15000,   // wait for SMTP banner
-  socketTimeout: 20000,
-  logger: false,
-  debug: false,
-} as any);
-
-/**
- * Verify transporter at startup (useful to fail fast / log detailed info)
- * Call transporter.verify() and log issues. If verify fails on Render, network or credentials are likely the issue.
- */
-export const verifyTransporter = async () => {
-  try {
-    const ok = await transporter.verify();
-    console.log('✅ Mail transporter verified (SMTP connection OK).');
-    return ok;
-  } catch (err) {
-    console.error('❌ Mail transporter verification failed:', err);
-    return false;
-  }
-};
-
-/**
- * small exponential-backoff retry wrapper for sendMail
- */
-async function sendWithRetry(mailOptions: nodemailer.SendMailOptions, attempts = 3) {
-  let attempt = 0;
-  let lastError: any = null;
-  while (attempt < attempts) {
-    try {
-      attempt++;
-      const info = await transporter.sendMail(mailOptions);
-      return info;
-    } catch (err) {
-      lastError = err;
-      console.warn(`Mail send attempt ${attempt} failed: ${err?.code || err?.message || err}.`);
-      // If it's a permanent auth error, don't retry
-      if (err && (err.code === 'EAUTH' || err.responseCode === 535 || err.responseCode === 534)) {
-        throw err;
-      }
-      // small backoff
-      await new Promise((r) => setTimeout(r, 1000 * attempt));
+    service: 'gmail', // Use 'gmail' or the service name of your provider
+    auth: {
+        user: process.env.GMAIL_USER, // Your Gmail address from .env
+        pass: process.env.GMAIL_PASS, // Your App Password from .env
     }
-  }
-  throw lastError;
-}
+});
 
-/**
- * Send verification email with retries and improved error logging
- */
+// Function to send the email
 export const SendVerificationEmail = async (email: string, otp: number) => {
-  const mailOptions: nodemailer.SendMailOptions = {
-    from: `"FoodieDelight" <${GMAIL_USER || 'no-reply@foodiedelight.com'}>`,
-    to: email,
-    subject: 'Your Verification Code',
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
-        <h2 style="color: #ff4d4d;">FoodieDelight Verification</h2>
-        <p>Your One-Time Password (OTP) is:</p>
-        <p style="font-size: 24px; font-weight: bold; color: #333; background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 2px;">${otp}</p>
-        <p>This code expires in 30 minutes.</p>
-      </div>
-    `,
-  };
+    try {
+        const mailOptions = {
+            from: 'Your App Name <no-reply@yourapp.com>', // Sender address
+            to: email, // Recipient
+            subject: 'Your One-Time Password (OTP) for Verification', // Subject line
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
+                    <h2 style="color: #333;">OTP for Account Verification</h2>
+                    <p>Thank you for signing up! Please use the following code to complete your verification:</p>
+                    <p style="font-size: 24px; font-weight: bold; color: #4CAF50; padding: 10px; background-color: #f4f4f4; border-radius: 5px; display: inline-block;">${otp}</p>
+                    <p>This code is valid for 30 minutes.</p>
+                    <p>If you did not request this, please ignore this email.</p>
+                </div>
+            `,
+        };
 
-  try {
-    const info = await sendWithRetry(mailOptions, 3);
-    console.log(`✅ Email sent: ${info.messageId}`);
-    return true;
-  } catch (error) {
-    // Provide richer log so you can diagnose on Render logs
-    console.error('❌ Email Error (final):', {
-      message: error?.message,
-      code: error?.code,
-      response: error?.response,
-      responseCode: error?.responseCode,
-      stack: error?.stack?.split('\n')?.slice(0, 5).join('\n'),
-    });
-    return false;
-  }
-};
+        const info = await transporter.sendMail(mailOptions);
 
-// Optional: helper to run verification from your app startup
-export const testMailer = async () => {
-  console.log('Testing mailer connection...');
-  await verifyTransporter();
-};
+        console.log(`✅ Email sent successfully to ${email}. Message ID: ${info.messageId}`);
+        return true;
 
-export default transporter;
+    } catch (error) {
+        console.error(`❌ Error sending email to ${email}:`, error);
+
+        console.error("Error sending verification email:", error);
+        return false;
+    }
+}
