@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Delivery App</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+    
+    <div class="main-content-wrapper">
+        <div id="message-container"></div>
+        
+        <main id="app-content">
+            <div id="category-filters" class="category-filters"></div>
+            
+            <!-- View Toggle Buttons -->
+            <div class="view-toggle-container">
+                <button class="view-toggle-btn active" data-view="grid" title="Grid View">
+                    <i class="fas fa-th"></i> Grid
+                </button>
+                <button class="view-toggle-btn" data-view="table" title="Table View">
+                    <i class="fas fa-list"></i> Table
+                </button>
+            </div>
+
+            <!-- Grid View -->
+            <div id="food-grid-container" class="food-grid view-container active"></div>
+
+            <!-- Table View -->
+            <div id="food-table-container" class="food-table-wrapper view-container">
+                <table class="food-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Food Name</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="food-table-body">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loading-overlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        </main>
+    </div>
+    <button id="back-to-top-btn" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <button id="fixed-cart-btn" class="nav-link cart-link" data-page="cart" title="View Cart">
+        <i class="fas fa-shopping-cart"></i> <span id="fixed-cart-count">0</span>
+    </button>
+
+    <script type="module" src="api.js"></script>
+    <script type="module" src="app.js"></script>
+    <script src="table-view.js"></script>
+</body>
+</html>
